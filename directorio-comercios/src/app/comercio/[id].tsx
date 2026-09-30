@@ -1,26 +1,62 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
-import Button from '../../shared/ui/button';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
+import Button from "../../shared/ui/button";
+import { Promocion } from "../../tipos";
+import { buscarPromocionesPorComercio } from "../../service/promociones";
 
 export default function DetalleComercioScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  const [listaPromociones, setListaPromociones] = useState<Promocion[]>([]);
+  const [cargando, setCargando] = useState<boolean>(true);
+
+  useEffect(() => {
+    const cargarPromociones = async () => {
+      setCargando(true);
+      const promocionesObtenidas = await buscarPromocionesPorComercio(id);
+      setListaPromociones(promocionesObtenidas);
+      setCargando(false);
+    };
+
+    if (id) {
+      cargarPromociones();
+    }
+  }, [id]);
+
+  if (cargando) {
+    return <Text>Cargando...</Text>;
+  }
 
   return (
     <SafeAreaView style={styles.contenedor}>
       {/* Botón Volver reutilizable */}
       <Button title="Volver" />
-
       <View style={styles.tarjetaFicha}>
         <Text style={styles.titulo}>Ficha del Comercio</Text>
         <Text style={styles.subtitulo}>Identificador del comercio: #{id}</Text>
         <Text style={styles.descripcion}>
-          Acá se visualizan los horarios detallados, promociones vigentes y ubicación del comercio en Concepción del Uruguay.
+          Acá se visualizan los horarios detallados, promociones vigentes y
+          ubicación del comercio en Concepción del Uruguay.
         </Text>
       </View>
-      <View style= {styles.resena}> 
-        <Text style= {styles.subtitulo}> Reseña</Text>
+
+      {/* Promociones */}
+      {listaPromociones.length > 0 && (
+        <View style={styles.tarjetaFicha}>
+          <Text style={styles.titulo}>Promociones</Text>
+
+          {listaPromociones.map((promocion) => (
+            <Text key={promocion.id} style={styles.descripcion}>
+              {promocion.titulo}: {promocion.detalle} - Descuento:{" "}
+              {promocion.descuento}%
+            </Text>
+          ))}
+        </View>
+      )}
+      <View style={styles.resena}>
+        <Text style={styles.subtitulo}> Reseña</Text>
         <Text>{resena.estrellas}</Text>
         <Text>{resena.comentario}</Text>
         <Text>Respuesta del comercio:{resena.respuesta}</Text>
@@ -50,22 +86,22 @@ const resena: Resena = {
   respuesta: "¡Gracias Marta! Siempre a las órdenes.",
   reportada: false,
   creadaEn: "2026-09-10T17:05:00-03:00",
-  sincronizada: true
+  sincronizada: true,
 };
 
 const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     padding: 16,
   },
   tarjetaFicha: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: "#F8FAFC",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: "#E2E8F0",
   },
   resena: {
     marginTop: 20,
@@ -73,17 +109,17 @@ const styles = StyleSheet.create({
   },
   titulo: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#0B3A5D',
+    fontWeight: "bold",
+    color: "#0B3A5D",
   },
   subtitulo: {
     fontSize: 14,
-    color: '#64748B',
+    color: "#64748B",
     marginTop: 6,
   },
   descripcion: {
     fontSize: 14,
-    color: '#334155',
+    color: "#334155",
     marginTop: 12,
     lineHeight: 20,
   },
