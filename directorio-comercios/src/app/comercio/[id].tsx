@@ -4,8 +4,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import Button from '../../shared/ui/button';
 
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
+
+function filaFavorito ({comercio, onEliminar}: {comercio:any;onEliminar:(id:any)=>void}) {
+  const translateX = useSharedValue(0);
+  const swipe = Gesture.Pan()
+  .onUpdate((e) => {
+    translateX.value = Math.min (0, e.translationX);
+  })
+  .onEnd ((e) => {
+    if (e.translationX < -100) {
+      onEliminar(comercio.id);
+    }
+    translateX.value = 0;
+  });
+  const style = useAnimatedStyle(() => ({
+    transform: [{translateX: translateX.value}],
+  }));
+  return (
+    <GestureDetector gesture={swipe}>
+      <Animated.View style = {[styles.fila, style]}>
+        <Text>{comercio.nombre}</Text>
+      </Animated.View>
+    </GestureDetector>
+  );
+} 
+
 export default function DetalleComercioScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  
 
   return (
     <SafeAreaView style={styles.contenedor}>
@@ -24,6 +52,11 @@ export default function DetalleComercioScreen() {
 }
 
 const styles = StyleSheet.create({
+  fila:{
+    padding:16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
   contenedor: {
     flex: 1,
     backgroundColor: '#FFFFFF',
