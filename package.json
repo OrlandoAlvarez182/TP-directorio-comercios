@@ -5,5 +5,8 @@
     "react-hook-form": "^7.88.0",
     "react-native-gesture-handler": "~2.32.0",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
   }
 }
